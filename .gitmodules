@@ -1,0 +1,3 @@
+[submodule "can_constants"]
+	path = can_constants
+	url = git@github.com:X-Lemon-X/can_constants.git
