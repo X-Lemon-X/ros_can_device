@@ -37,10 +37,9 @@ SOFTWARE.
 
 #include "rclcpp/rclcpp.hpp"
 #include "can_device/can_device.hpp"
-#include "shared_types_nomad/status.hpp"
+#include "ari_shared_types/status.hpp"
 
-using namespace nomad_core;
-using namespace nomad_hardware;
+using namespace ari;
 
 std::vector<std::shared_ptr<CanDriver>> CanDriver::global_can_driver;
 
@@ -72,19 +71,7 @@ CanDriver::Make(const std::string &can_interface, bool threaded, uint32_t timeou
     return Status::Invalid("Invalid buffer size");
   }
 
-  // auto mayby_can = std::find_if(global_can_driver.begin(), global_can_driver.end(),
-  //                               [can_interface](const std::shared_ptr<CanDriver> &driver) {
-  //                                 return driver->can_interface_name == can_interface;
-  //                               });
-  // // if we have already created a driver for this interface, return it
-  // if(mayby_can != global_can_driver.end()) {
-  //   return Result<std::shared_ptr<CanDriver>>::OK(*mayby_can);
-  // }
-  // if the driver is not found, create a new one
-  auto driver =
-  std::shared_ptr<CanDriver>(new CanDriver(can_interface, threaded, timeout_us, _queue_size, _buffer_size));
-  // global_can_driver.push_back(driver);
-  return Result<std::shared_ptr<CanDriver>>::OK(driver);
+  return Result<std::shared_ptr<CanDriver>>::OK(std::shared_ptr<CanDriver>(new CanDriver(can_interface, threaded, timeout_us, _queue_size, _buffer_size)));
 }
 
 Status CanDriver::open_can() {
@@ -327,7 +314,7 @@ Result<CanFrame> CanDriver::read_can_frame() {
 
 Result<CanFrame> CanDriver::read_and_handle_frame() {
   // std::lock_guard<std::mutex> lock(queue_mutex);
-  NOMAD_ASSING_OR_RETURN(frame, read_can_frame());
+  ARI_ASSING_OR_RETURN(frame, read_can_frame());
   uint32_t id = frame.id | (frame.is_remote_request ? CAN_RTR_FLAG : 0);
   auto it     = callbacks_.find(id);
   if(it != callbacks_.end()) {
@@ -335,7 +322,7 @@ Result<CanFrame> CanDriver::read_and_handle_frame() {
     auto args     = it->second.second;
     callback(*this, frame, args);
   }
-  return Result<CanFrame>::OK(frame);
+  return Result<CanFrame>::OK(std::move(frame));
 }
 
 Status CanDriver::send(const CanFrame &frame) {

@@ -3,7 +3,6 @@
 #include "can_device/can_device.hpp"
 #include "can_messages.h"
 
-using namespace nomad_hardware;
 
 
 /**

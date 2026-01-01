@@ -15,7 +15,7 @@ endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp
-  shared_types_nomad
+  ari_shared_types
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -24,11 +24,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# find_package(rclcpp REQUIRED)
-# find_package(std_msgs REQUIRED)
-# find_package(sensor_msgs REQUIRED)
-# find_package(geometry_msgs REQUIRED)
-# find_package(shared_types_nomad REQUIRED)
 
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
@@ -37,23 +32,28 @@ endforeach()
 # add_subdirectory(can_constants)
 
 # Generate CAN message files if they don't exist (run at configure time)
-set(CAN_MESSAGES_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/can_constants/can_messages/output/can_messages.c")
-if(NOT EXISTS ${CAN_MESSAGES_OUTPUT})
-  message(STATUS "Generating CAN message files...")
-  execute_process(
-    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/./generate-files.sh -v
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    RESULT_VARIABLE GENERATE_RESULT
-  )
-  if(NOT GENERATE_RESULT EQUAL 0)
-    message(FATAL_ERROR "Failed to generate CAN message files")
-  endif()
-endif()
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/can_messages/output/can_messages.c
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/generate-files.sh -v
+  # DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/ros_can_device/can_constants/generate-files.sh 
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+add_custom_target(gen_files
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/can_constants/can_messages/output/can_messages.c"
+)
+
 
 add_library(${PROJECT_NAME} 
   SHARED
   src/can_device.cpp
   can_constants/can_messages/output/can_messages.c
+)
+
+add_dependencies(
+  ${PROJECT_NAME}
+  gen_files
 )
 
 
@@ -89,7 +89,7 @@ ament_export_include_directories(
 ament_target_dependencies(
   ${PROJECT_NAME}
   rclcpp
-  shared_types_nomad
+  ari_shared_types
 )
 
 install(TARGETS 

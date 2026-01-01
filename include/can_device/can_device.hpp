@@ -35,16 +35,14 @@ SOFTWARE.
 
 #include <string>
 #include "rclcpp/rclcpp.hpp"
-#include "shared_types_nomad/status.hpp"
+#include "ari_shared_types/status.hpp"
 #include <unordered_map>
 #include <functional>
 #include <queue>
 #include <mutex>
 
 
-using namespace nomad_core;
-
-namespace nomad_hardware {
+using namespace ari;
 
 template <typename T>
 concept CanFrameType = std::same_as<T, can_frame> || std::same_as<T, canfd_frame>;
@@ -203,4 +201,3 @@ private:
 };
 
 
-} // namespace nomad_hardware
