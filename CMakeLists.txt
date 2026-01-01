@@ -36,6 +36,19 @@ endforeach()
 
 # add_subdirectory(can_constants)
 
+# Generate CAN message files if they don't exist (run at configure time)
+set(CAN_MESSAGES_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/can_constants/can_messages/output/can_messages.c")
+if(NOT EXISTS ${CAN_MESSAGES_OUTPUT})
+  message(STATUS "Generating CAN message files...")
+  execute_process(
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/./generate-files.sh -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE GENERATE_RESULT
+  )
+  if(NOT GENERATE_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate CAN message files")
+  endif()
+endif()
 
 add_library(${PROJECT_NAME} 
   SHARED
@@ -119,12 +132,14 @@ target_link_libraries(can_device_node can_device)
 install(TARGETS can_device_node DESTINATION lib/${PROJECT_NAME})
 
 
-add_custom_target(generate_can_files
-  COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/./generate-files.sh -v
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
+# add_custom_target(generate_can_files
+#   COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/./generate-files.sh -v
+#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+# )
 
-add_dependencies(${PROJECT_NAME} generate_can_files)
+# add_dependencies(can_device generate_can_files)
+
+
 
 
 if(BUILD_TESTING)
