@@ -49,6 +49,7 @@ add_library(${PROJECT_NAME}
   SHARED
   src/can_device.cpp
   can_constants/can_messages/output/can_messages.c
+
 )
 
 add_dependencies(
@@ -84,6 +85,7 @@ target_link_libraries(
 ament_export_include_directories(
   include
   ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/can_messages/output
+  ${CMAKE_CURRENT_SOURCE_DIR}/can_constants/src
 )
 
 ament_target_dependencies(
@@ -107,6 +109,12 @@ install(TARGETS can_device
 
 install(
   DIRECTORY can_constants/can_messages/output/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+
+install(
+  DIRECTORY can_constants/src/
   DESTINATION include/${PROJECT_NAME}
 )
 

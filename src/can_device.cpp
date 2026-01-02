@@ -24,20 +24,20 @@ SOFTWARE.
  * Authors: Patryk Dudziński
  */
 
+#include <fcntl.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <net/if.h>
-#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <unistd.h>
 
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
-#include "can_device/can_device.hpp"
 #include "ari_shared_types/status.hpp"
+#include "can_device/can_device.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 using namespace ari;
 
@@ -71,7 +71,8 @@ CanDriver::Make(const std::string &can_interface, bool threaded, uint32_t timeou
     return Status::Invalid("Invalid buffer size");
   }
 
-  return Result<std::shared_ptr<CanDriver>>::OK(std::shared_ptr<CanDriver>(new CanDriver(can_interface, threaded, timeout_us, _queue_size, _buffer_size)));
+  return Result<std::shared_ptr<CanDriver>>::OK(
+  std::shared_ptr<CanDriver>(new CanDriver(can_interface, threaded, timeout_us, _queue_size, _buffer_size)));
 }
 
 Status CanDriver::open_can() {
@@ -314,7 +315,7 @@ Result<CanFrame> CanDriver::read_can_frame() {
 
 Result<CanFrame> CanDriver::read_and_handle_frame() {
   // std::lock_guard<std::mutex> lock(queue_mutex);
-  ARI_ASSING_OR_RETURN(frame, read_can_frame());
+  ARI_ASIGN_OR_RETURN(frame, read_can_frame());
   uint32_t id = frame.id | (frame.is_remote_request ? CAN_RTR_FLAG : 0);
   auto it     = callbacks_.find(id);
   if(it != callbacks_.end()) {
